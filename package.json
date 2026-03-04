@@ -13,11 +13,14 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
+    "graphql": "^16.13.0",
+    "graphql-yoga": "^5.18.0",
     "hono": "^4.12.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.575.0",
@@ -33,6 +36,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "vaul": "^1.1.2",
+    "yoga": "^0.0.20",
     "zod": "^4.3.6"
   },
   "devDependencies": {
