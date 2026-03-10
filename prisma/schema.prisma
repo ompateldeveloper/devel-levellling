@@ -7,19 +7,77 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  password      String
-  name          String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  
-  projectsOwned Project[] @relation("ProjectOwner")
+  id             String           @id @default(cuid())
+  email          String           @unique
+  password       String?
+  name           String?
+  role           Role             @default(USER)
+  tasksCreated   Task[]           @relation("TaskCreator")
+  projectsOwned  Project[]        @relation("ProjectOwner")
   projectsMember ProjectMembers[]
-  tasksAssigned Task[]    @relation("TaskAssignee")
-  tasksCreated  Task[]    @relation("TaskCreator")
+  tasksAssigned  Task[]           @relation("TaskAssignee")
+
+  image         String?
+  emailVerified Boolean   @default(false)
+  sessions      Session[]
+  accounts      Account[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
 }
+
+// better auth models
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// custom models
 
 enum Role {
   USER
@@ -27,15 +85,13 @@ enum Role {
 }
 
 model Project {
-  id          String   @id @default(cuid())
+  id          String           @id @default(cuid())
   name        String
   description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
   ownerId     String
-  owner       User     @relation("ProjectOwner", fields: [ownerId], references: [id])
-  
+  owner       User             @relation("ProjectOwner", fields: [ownerId], references: [id])
   members     ProjectMembers[]
   tasks       Task[]
 }
@@ -43,32 +99,28 @@ model Project {
 model ProjectMembers {
   projectId String
   userId    String
-  role      String   @default("MEMBER") // OWNER, MANAGER, MEMBER
-  
+  role      String  @default("MEMBER") // OWNER, MANAGER, MEMBER
   project   Project @relation(fields: [projectId], references: [id])
   user      User    @relation(fields: [userId], references: [id])
-  
+
   @@id([projectId, userId])
 }
 
 model Task {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
   description String?
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
   dueDate     DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   projectId   String
-  project     Project   @relation(fields: [projectId], references: [id])
-  
+  project     Project    @relation(fields: [projectId], references: [id])
   assigneeId  String?
-  assignee    User?     @relation("TaskAssignee", fields: [assigneeId], references: [id])
-  
+  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
   creatorId   String
-  creator     User      @relation("TaskCreator", fields: [creatorId], references: [id])
+  creator     User       @relation("TaskCreator", fields: [creatorId], references: [id])
 }
 
 enum TaskStatus {
